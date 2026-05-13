@@ -25,7 +25,16 @@ spec:
           serviceAccountName: {{ include "cypik.serviceAccountName" $ }}
           containers:
             - name: {{ $jobName }}
-              image: {{ default (include "cypik.image" $) .image | quote }}
+              {{- $image := .image | default dict }}
+              {{- $imageRepo := "" }}
+              {{- $imageTag := "" }}
+              {{- if kindIs "string" .image }}
+                {{- $imageRepo = .image }}
+              {{- else }}
+                {{- $imageRepo = required (printf "cronjobs[%s].image.repository is required" $jobName) (default $.Values.image.repository .image.repository) }}
+                {{- $imageTag = default (default $.Values.image.tag $.Chart.AppVersion) .image.tag }}
+              {{- end }}
+              image: {{ if kindIs "string" .image }}{{ .image | quote }}{{ else }}{{ printf "%s:%s" $imageRepo $imageTag | quote }}{{ end }}
               imagePullPolicy: {{ default $.Values.image.pullPolicy .imagePullPolicy }}
               {{- with .command }}
               command:

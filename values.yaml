@@ -242,6 +242,12 @@ sidecars: []
 
 # -- CronJob definitions.
 cronjobs: []
+  # - name: "hello-world"
+  #   schedule: "*/1 * * * *"
+  #   image:
+  #     repository: busybox
+  #     tag: "latest"
+  #   command: ["/bin/sh", "-c", "date; echo Hello from Cypik Helm Chart"]
 
 # -- Extra Kubernetes objects rendered with tpl.
 extraObjects: []
