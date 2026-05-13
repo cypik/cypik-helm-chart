@@ -1,7 +1,0 @@
-.git/
-.idea/
-.codex/
-.agents/
-*.swp
-*.tmp
-.DS_Store
