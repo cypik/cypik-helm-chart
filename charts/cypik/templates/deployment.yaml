@@ -2,7 +2,7 @@
 {{- $isMulti := gt (len .Values.applications) 0 }}
 {{- $apps := .Values.applications }}
 {{- if not $isMulti }}
-{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "replicaCount" .Values.replicaCount "image" .Values.image "deployment" .Values.deployment "autoscaling" .Values.autoscaling "keda" .Values.keda "command" .Values.command "args" .Values.args "securityContext" .Values.securityContext "lifecycle" .Values.lifecycle "containerPorts" .Values.containerPorts "env" .Values.env "envFrom" .Values.envFrom "probes" .Values.probes "resources" .Values.resources "volumeMounts" .Values.volumeMounts "volumes" .Values.volumes "sidecars" .Values.sidecars "initContainers" .Values.initContainers "podSecurityContext" .Values.podSecurityContext "priorityClassName" .Values.priorityClassName "hostAliases" .Values.hostAliases "nodeSelector" .Values.nodeSelector "affinity" .Values.affinity "topologySpreadConstraints" .Values.topologySpreadConstraints "tolerations" .Values.tolerations "persistence" .Values.persistence) }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "replicaCount" .Values.replicaCount "image" .Values.image "deployment" .Values.deployment "autoscaling" .Values.autoscaling "keda" .Values.keda "command" .Values.command "args" .Values.args "securityContext" .Values.securityContext "lifecycle" .Values.lifecycle "containerPorts" .Values.containerPorts "env" .Values.env "envFrom" .Values.envFrom "probes" .Values.probes "resources" .Values.resources "volumeMounts" .Values.volumeMounts "volumes" .Values.volumes "sidecars" .Values.sidecars "initContainers" .Values.initContainers "podSecurityContext" .Values.podSecurityContext "priorityClassName" .Values.priorityClassName "hostAliases" .Values.hostAliases "nodeSelector" .Values.nodeSelector "affinity" .Values.affinity "topologySpreadConstraints" .Values.topologySpreadConstraints "tolerations" .Values.tolerations "persistence" .Values.persistence "config" .Values.config "secret" .Values.secret) }}
 {{- end }}
 {{- range $apps }}
 {{- $app := . }}
@@ -114,15 +114,17 @@ spec:
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if or $app.envFrom (and (not $isMulti) $root.Values.config.enabled) (and (not $isMulti) $root.Values.secret.enabled) }}
+          {{- $config := default dict $app.config }}
+          {{- $secret := default dict $app.secret }}
+          {{- if or $app.envFrom (default false $config.enabled) (default false $secret.enabled) }}
           envFrom:
-            {{- if and (not $isMulti) $root.Values.config.enabled }}
+            {{- if default false $config.enabled }}
             - configMapRef:
-                name: {{ include "cypik.fullname" $root }}
+                name: {{ $fullName }}
             {{- end }}
-            {{- if and (not $isMulti) $root.Values.secret.enabled }}
+            {{- if default false $secret.enabled }}
             - secretRef:
-                name: {{ include "cypik.fullname" $root }}
+                name: {{ $fullName }}
             {{- end }}
             {{- with $app.envFrom }}
             {{- toYaml . | nindent 12 }}

@@ -229,6 +229,31 @@
                 "type": "array"
               }
             }
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "data": {
+                "type": "object"
+              }
+            }
+          },
+          "secret": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "data": {
+                "type": "object"
+              },
+              "stringData": {
+                "type": "object"
+              }
+            }
           }
         }
       }

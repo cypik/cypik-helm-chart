@@ -47,7 +47,7 @@ envFrom: []
 
 config:
   # -- Create ConfigMap and inject it with envFrom.
-  enabled: false
+  enabled: true
   # -- ConfigMap key/value data.
   data: {}
 
@@ -271,6 +271,10 @@ applications:
             - path: /
               pathType: Prefix
               servicePort: httpd
+    config:
+      enabled: true
+      data:
+        APP_NAME: "frontend-app"
   - name: api
     image:
       repository: nginx
