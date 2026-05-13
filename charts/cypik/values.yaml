@@ -20,7 +20,7 @@ imagePullSecrets: []
 
 deployment:
   # -- Create Deployment resource.
-  enabled: true
+  enabled: false
   # -- Deployment strategy.
   strategy:
     type: RollingUpdate
@@ -90,7 +90,7 @@ lifecycle: {}
 
 service:
   # -- Create Service resource.
-  enabled: true
+  enabled: false
   # -- Service type.
   type: ClusterIP
   # -- Service annotations.
@@ -252,4 +252,41 @@ tests:
 
 # -- Optional multi-application mode. Each item can deploy its own Deployment,
 # Service, Ingress, HPA, and KEDA ScaledObject in the same Helm release.
-applications: []
+applications:
+  - name: frontend
+    image:
+      repository: nginx
+      tag: "1.25"
+    service:
+      enabled: true
+      ports:
+        - name: http
+          port: 80
+          targetPort: 80
+    ingress:
+      enabled: false
+      hosts:
+        - host: app.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+              servicePort: httpd
+  - name: api
+    image:
+      repository: nginx
+      tag: "latest"
+    service:
+      enabled: true
+      ports:
+        - name: httpd
+          port: 80
+          targetPort: 8080
+    ingress:
+      enabled: false
+      hosts:
+        - host: api.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+              servicePort: http
+

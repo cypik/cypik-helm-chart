@@ -12,7 +12,10 @@
 {{- $imageRepo := required (printf "applications[%s].image.repository is required" $appName) (default $root.Values.image.repository $image.repository) }}
 {{- $imageTag := default (default $root.Chart.AppVersion $root.Values.image.tag) $image.tag }}
 {{- $deployment := default dict $app.deployment }}
-{{- $deploymentEnabled := default true $deployment.enabled }}
+{{- $deploymentEnabled := true -}}
+{{- if hasKey $deployment "enabled" -}}
+  {{- $deploymentEnabled = $deployment.enabled -}}
+{{- end -}}
 {{- $autoscaling := default dict $app.autoscaling }}
 {{- $keda := default dict $app.keda }}
 {{- $probes := default dict $app.probes }}
