@@ -1,0 +1,37 @@
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "service" .Values.service) }}
+{{- end }}
+{{- range $apps }}
+{{- $appName := required "applications[].name is required" .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $service := default dict .service }}
+{{- if default false $service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
+  {{- with $service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ default "ClusterIP" $service.type }}
+  ports:
+    {{- toYaml (default (list (dict "name" "http" "port" 80 "targetPort" "http" "protocol" "TCP")) $service.ports) | nindent 4 }}
+  selector:
+    app.kubernetes.io/name: {{ include "cypik.name" $root }}
+    app.kubernetes.io/instance: {{ $root.Release.Name }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
+{{- end }}
+{{- end }}

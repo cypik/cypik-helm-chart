@@ -1,0 +1,26 @@
+apiVersion: v2
+name: cypik
+description: A reusable Helm chart for deploying web apps, APIs, workers, and services across projects.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+annotations:
+  artifacthub.io/category: integration-delivery
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/license: MIT
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial reusable application chart with Deployment, Service, Ingress, HPA, KEDA ScaledObject, RBAC, NetworkPolicy, PVC, PDB, CronJob, and extra objects support.
+keywords:
+  - universal
+  - application
+  - deployment
+  - service
+  - keda
+  - kubernetes
+home: https://cypik.com
+sources:
+  - https://github.com/cypik/cypik
+maintainers:
+  - name: Cypik

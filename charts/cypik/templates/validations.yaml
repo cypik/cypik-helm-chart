@@ -1,0 +1,38 @@
+{{- if and .Values.autoscaling.enabled .Values.keda.enabled }}
+{{- fail "autoscaling.enabled and keda.enabled cannot both be true. Use either standard HPA or KEDA ScaledObject." }}
+{{- end }}
+{{- if and .Values.autoscaling.enabled (not .Values.deployment.enabled) }}
+{{- fail "autoscaling.enabled requires deployment.enabled=true." }}
+{{- end }}
+{{- if and .Values.autoscaling.enabled (not (or .Values.autoscaling.targetCPUUtilizationPercentage .Values.autoscaling.targetMemoryUtilizationPercentage)) }}
+{{- fail "autoscaling requires at least one metric: targetCPUUtilizationPercentage or targetMemoryUtilizationPercentage." }}
+{{- end }}
+{{- if and .Values.keda.enabled (not .Values.keda.triggers) }}
+{{- fail "keda.triggers must contain at least one trigger when keda.enabled is true." }}
+{{- end }}
+{{- if and .Values.keda.enabled (not .Values.deployment.enabled) }}
+{{- fail "keda.enabled requires deployment.enabled=true." }}
+{{- end }}
+{{- range .Values.applications }}
+{{- $autoscaling := default dict .autoscaling }}
+{{- $keda := default dict .keda }}
+{{- $deployment := default dict .deployment }}
+{{- if and $autoscaling.enabled $keda.enabled }}
+{{- fail (printf "applications[%s].autoscaling.enabled and applications[%s].keda.enabled cannot both be true" .name .name) }}
+{{- end }}
+{{- if and $autoscaling.enabled (eq $deployment.enabled false) }}
+{{- fail (printf "applications[%s].autoscaling.enabled requires deployment.enabled=true" .name) }}
+{{- end }}
+{{- if and $keda.enabled (eq $deployment.enabled false) }}
+{{- fail (printf "applications[%s].keda.enabled requires deployment.enabled=true" .name) }}
+{{- end }}
+{{- $service := default dict .service }}
+{{- $ingress := default dict .ingress }}
+{{- if and $ingress.enabled (not $service.enabled) }}
+{{- fail (printf "applications[%s].ingress.enabled requires service.enabled=true" .name) }}
+{{- end }}
+{{- end }}
+{{- range .Values.cronjobs }}
+{{- $_ := required "cronjobs[].name is required" .name }}
+{{- $_ := required (printf "cronjobs[%s].schedule is required" .name) .schedule }}
+{{- end }}

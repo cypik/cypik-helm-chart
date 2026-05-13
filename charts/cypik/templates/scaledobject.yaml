@@ -1,0 +1,50 @@
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "keda" .Values.keda) }}
+{{- end }}
+{{- range $apps }}
+{{- $appName := required "applications[].name is required" .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $keda := default dict .keda }}
+{{- if default false $keda.enabled }}
+{{- if not $keda.triggers }}
+{{- fail (printf "applications[%s].keda.triggers must contain at least one trigger when keda.enabled is true" $appName) }}
+{{- end }}
+---
+apiVersion: {{ default "keda.sh/v1alpha1" $keda.apiVersion }}
+kind: ScaledObject
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
+  {{- with $keda.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    name: {{ $fullName }}
+  pollingInterval: {{ default 30 $keda.pollingInterval }}
+  cooldownPeriod: {{ default 300 $keda.cooldownPeriod }}
+  {{- if ne $keda.idleReplicaCount nil }}
+  idleReplicaCount: {{ $keda.idleReplicaCount }}
+  {{- end }}
+  minReplicaCount: {{ default 1 $keda.minReplicaCount }}
+  maxReplicaCount: {{ default 10 $keda.maxReplicaCount }}
+  {{- with $keda.fallback }}
+  fallback:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $keda.advanced }}
+  advanced:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  triggers:
+    {{- toYaml $keda.triggers | nindent 4 }}
+{{- end }}
+{{- end }}

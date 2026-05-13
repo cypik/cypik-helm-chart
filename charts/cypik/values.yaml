@@ -1,0 +1,255 @@
+# -- Override the chart name.
+nameOverride: ""
+
+# -- Override the full release name.
+fullnameOverride: ""
+
+# -- Number of pod replicas when HPA/KEDA is disabled.
+replicaCount: 1
+
+image:
+  # -- Container image repository.
+  repository: nginx
+  # -- Container image pull policy.
+  pullPolicy: IfNotPresent
+  # -- Container image tag.
+  tag: "latest"
+
+# -- Image pull secrets for private registries.
+imagePullSecrets: []
+
+deployment:
+  # -- Create Deployment resource.
+  enabled: true
+  # -- Deployment strategy.
+  strategy:
+    type: RollingUpdate
+  # -- Deployment annotations.
+  annotations: {}
+  # -- Pod annotations.
+  podAnnotations: {}
+  # -- Extra pod labels.
+  podLabels: {}
+  # -- Deployment revision history limit.
+  revisionHistoryLimit: 10
+
+# -- Container command override.
+command: []
+
+# -- Container args override.
+args: []
+
+# -- Direct container env vars.
+env: []
+
+# -- Additional envFrom refs.
+envFrom: []
+
+config:
+  # -- Create ConfigMap and inject it with envFrom.
+  enabled: false
+  # -- ConfigMap key/value data.
+  data: {}
+
+secret:
+  # -- Create Secret and inject it with envFrom.
+  enabled: false
+  # -- Secret type.
+  type: Opaque
+  # -- Plain string secret data. Prefer external secret managers for real production secrets.
+  stringData: {}
+  # -- Base64 encoded secret data.
+  data: {}
+
+serviceAccount:
+  # -- Create ServiceAccount.
+  create: true
+  # -- Automount service account token.
+  automount: true
+  # -- ServiceAccount annotations.
+  annotations: {}
+  # -- Existing ServiceAccount name. Generated when empty.
+  name: ""
+
+rbac:
+  # -- Create Role/RoleBinding or ClusterRole/ClusterRoleBinding.
+  create: false
+  # -- Create ClusterRole when true, namespace Role when false.
+  clusterWide: false
+  # -- RBAC rules.
+  rules: []
+
+# -- Pod security context.
+podSecurityContext: {}
+
+# -- Main container security context.
+securityContext: {}
+
+# -- Main container lifecycle hooks.
+lifecycle: {}
+
+service:
+  # -- Create Service resource.
+  enabled: true
+  # -- Service type.
+  type: ClusterIP
+  # -- Service annotations.
+  annotations: {}
+  # -- Service ports.
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+
+# -- Main container ports.
+containerPorts:
+  - name: http
+    containerPort: 80
+    protocol: TCP
+
+ingress:
+  # -- Create Ingress resource.
+  enabled: false
+  # -- Ingress class name.
+  className: ""
+  # -- Ingress annotations.
+  annotations: {}
+  # -- Ingress hosts and paths.
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+          servicePort: http
+  # -- Ingress TLS configuration.
+  tls: []
+
+# -- Container resource requests and limits.
+resources: {}
+
+probes:
+  liveness:
+    # -- Enable liveness probe.
+    enabled: false
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  readiness:
+    # -- Enable readiness probe.
+    enabled: false
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  startup:
+    # -- Enable startup probe.
+    enabled: false
+    httpGet:
+      path: /
+      port: http
+    failureThreshold: 30
+    periodSeconds: 10
+
+autoscaling:
+  # -- Create standard Kubernetes HPA. Keep false when KEDA is enabled.
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: null
+
+keda:
+  # -- Create KEDA ScaledObject. Requires KEDA CRDs installed in the cluster.
+  enabled: false
+  # -- KEDA ScaledObject API version.
+  apiVersion: keda.sh/v1alpha1
+  # -- ScaledObject annotations.
+  annotations: {}
+  # -- How often KEDA checks trigger metrics, in seconds.
+  pollingInterval: 30
+  # -- Cooldown before scaling back down, in seconds.
+  cooldownPeriod: 300
+  # -- Idle replica count. Leave null unless the scaler supports it.
+  idleReplicaCount: null
+  # -- Minimum replicas managed by KEDA.
+  minReplicaCount: 1
+  # -- Maximum replicas managed by KEDA.
+  maxReplicaCount: 10
+  # -- KEDA fallback config.
+  fallback: {}
+  # -- KEDA advanced config.
+  advanced: {}
+  # -- KEDA trigger list.
+  triggers: []
+
+pdb:
+  # -- Create PodDisruptionBudget.
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: null
+
+# -- Node selector.
+nodeSelector: {}
+
+# -- Pod tolerations.
+tolerations: []
+
+# -- Pod affinity.
+affinity: {}
+
+# -- Pod priority class name.
+priorityClassName: ""
+
+# -- Pod host aliases.
+hostAliases: []
+
+# -- Pod topology spread constraints.
+topologySpreadConstraints: []
+
+networkPolicy:
+  # -- Create NetworkPolicy.
+  enabled: false
+  policyTypes:
+    - Ingress
+  ingress: []
+  egress: []
+
+# -- Additional pod volumes.
+volumes: []
+
+# -- Additional main container volume mounts.
+volumeMounts: []
+
+persistence:
+  # -- Create PVC and mount it into the main container.
+  enabled: false
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+  storageClass: ""
+  annotations: {}
+  mountPath: /data
+
+# -- Init containers.
+initContainers: []
+
+# -- Additional sidecar containers.
+sidecars: []
+
+# -- CronJob definitions.
+cronjobs: []
+
+# -- Extra Kubernetes objects rendered with tpl.
+extraObjects: []
+
+tests:
+  # -- Create Helm test pod.
+  enabled: false
+
+# -- Optional multi-application mode. Each item can deploy its own Deployment,
+# Service, Ingress, HPA, and KEDA ScaledObject in the same Helm release.
+applications: []

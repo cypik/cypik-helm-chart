@@ -1,0 +1,56 @@
+{{- range .Values.cronjobs }}
+{{- $jobName := required "cronjobs[].name is required" .name }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ printf "%s-%s" (include "cypik.fullname" $) $jobName | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "cypik.labels" $ | nindent 4 }}
+spec:
+  schedule: {{ required (printf "cronjobs[%s].schedule is required" $jobName) .schedule | quote }}
+  {{- with .timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  successfulJobsHistoryLimit: {{ default 3 .successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ default 1 .failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "cypik.selectorLabels" $ | nindent 12 }}
+        spec:
+          restartPolicy: {{ default "OnFailure" .restartPolicy }}
+          serviceAccountName: {{ include "cypik.serviceAccountName" $ }}
+          containers:
+            - name: {{ $jobName }}
+              image: {{ default (include "cypik.image" $) .image | quote }}
+              imagePullPolicy: {{ default $.Values.image.pullPolicy .imagePullPolicy }}
+              {{- with .command }}
+              command:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .args }}
+              args:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .env }}
+              env:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- if or $.Values.config.enabled $.Values.secret.enabled .envFrom }}
+              envFrom:
+                {{- if $.Values.config.enabled }}
+                - configMapRef:
+                    name: {{ include "cypik.fullname" $ }}
+                {{- end }}
+                {{- if $.Values.secret.enabled }}
+                - secretRef:
+                    name: {{ include "cypik.fullname" $ }}
+                {{- end }}
+                {{- with .envFrom }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+              {{- end }}
+{{- end }}

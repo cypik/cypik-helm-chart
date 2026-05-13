@@ -1,0 +1,17 @@
+{{- if .Values.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "cypik.fullname" . }}
+  labels:
+    {{- include "cypik.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "cypik.selectorLabels" . | nindent 6 }}
+  {{- if ne .Values.pdb.maxUnavailable nil }}
+  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- end }}
+{{- end }}

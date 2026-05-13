@@ -1,0 +1,48 @@
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "autoscaling" .Values.autoscaling) }}
+{{- end }}
+{{- range $apps }}
+{{- $appName := required "applications[].name is required" .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $autoscaling := default dict .autoscaling }}
+{{- if default false $autoscaling.enabled }}
+{{- $cpuTarget := default 80 $autoscaling.targetCPUUtilizationPercentage }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $fullName }}
+  minReplicas: {{ default 1 $autoscaling.minReplicas }}
+  maxReplicas: {{ default 5 $autoscaling.maxReplicas }}
+  metrics:
+    {{- if $cpuTarget }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ $cpuTarget }}
+    {{- end }}
+    {{- if $autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ $autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}

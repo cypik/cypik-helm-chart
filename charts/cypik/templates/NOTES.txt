@@ -1,0 +1,17 @@
+1. Get the application URL:
+{{- if .Values.applications }}
+  Multiple applications are enabled. Check each application's Service or Ingress:
+  kubectl get svc,ingress --namespace {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+{{- else if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}{{ (first .paths).path }}
+{{- end }}
+{{- else if and .Values.service.enabled (contains "NodePort" .Values.service.type) }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "cypik.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if .Values.service.enabled }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "cypik.fullname" . }} 8080:{{ (first .Values.service.ports).port }}
+{{- else }}
+  No Service is enabled for this release.
+{{- end }}

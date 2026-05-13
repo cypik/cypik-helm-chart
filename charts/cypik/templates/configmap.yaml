@@ -1,0 +1,10 @@
+{{- if .Values.config.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cypik.fullname" . }}
+  labels:
+    {{- include "cypik.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.config.data | nindent 2 }}
+{{- end }}

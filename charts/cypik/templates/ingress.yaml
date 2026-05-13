@@ -1,0 +1,56 @@
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "ingress" .Values.ingress) }}
+{{- end }}
+{{- range $apps }}
+{{- $appName := required "applications[].name is required" .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $ingress := default dict .ingress }}
+{{- if default false $ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
+  {{- with $ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with $ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with $ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range $ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  {{- if kindIs "float64" .servicePort }}
+                  number: {{ .servicePort | int }}
+                  {{- else if kindIs "int" .servicePort }}
+                  number: {{ .servicePort }}
+                  {{- else }}
+                  name: {{ .servicePort }}
+                  {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}

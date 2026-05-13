@@ -1,0 +1,37 @@
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "persistence" .Values.persistence) }}
+{{- end }}
+{{- range $apps }}
+{{- $appName := required "applications[].name is required" .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $persistence := default dict .persistence }}
+{{- if default false $persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
+  {{- with $persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml (default $root.Values.persistence.accessModes $persistence.accessModes) | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ default $root.Values.persistence.size $persistence.size }}
+  {{- $storageClass := default $root.Values.persistence.storageClass $persistence.storageClass }}
+  {{- if $storageClass }}
+  storageClassName: {{ $storageClass | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
