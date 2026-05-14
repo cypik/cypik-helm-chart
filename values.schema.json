@@ -293,6 +293,40 @@
                 }
               }
             }
+          },
+          "serviceAccount": {
+            "type": "object",
+            "properties": {
+              "create": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "annotations": {
+                "type": "object"
+              },
+              "automount": {
+                "type": "boolean"
+              }
+            }
+          },
+          "rbac": {
+            "type": "object",
+            "properties": {
+              "create": {
+                "type": "boolean"
+              },
+              "clusterWide": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "rules": {
+                "type": "array"
+              }
+            }
           }
         }
       }

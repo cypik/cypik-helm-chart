@@ -1,51 +1,77 @@
-{{- if .Values.rbac.create }}
-{{- if .Values.rbac.clusterWide }}
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "rbac" .Values.rbac "serviceAccount" .Values.serviceAccount) }}
+{{- end }}
+
+{{- range $apps }}
+{{- $appName := .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $rbac := default dict .rbac }}
+{{- $sa := default dict .serviceAccount }}
+{{- if $rbac.create }}
+---
+{{- if $rbac.clusterWide }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "cypik.fullname" . }}
+  name: {{ default $fullName $rbac.name }}
   labels:
-    {{- include "cypik.labels" . | nindent 4 }}
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
 rules:
-  {{- toYaml .Values.rbac.rules | nindent 2 }}
+  {{- toYaml $rbac.rules | nindent 2 }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "cypik.fullname" . }}
+  name: {{ default $fullName $rbac.name }}
   labels:
-    {{- include "cypik.labels" . | nindent 4 }}
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "cypik.fullname" . }}
+  name: {{ default $fullName $rbac.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "cypik.serviceAccountName" . }}
-    namespace: {{ .Release.Namespace }}
+    name: {{ default $fullName $sa.name }}
+    namespace: {{ $root.Release.Namespace }}
 {{- else }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "cypik.fullname" . }}
+  name: {{ default $fullName $rbac.name }}
   labels:
-    {{- include "cypik.labels" . | nindent 4 }}
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
 rules:
-  {{- toYaml .Values.rbac.rules | nindent 2 }}
+  {{- toYaml $rbac.rules | nindent 2 }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "cypik.fullname" . }}
+  name: {{ default $fullName $rbac.name }}
   labels:
-    {{- include "cypik.labels" . | nindent 4 }}
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "cypik.fullname" . }}
+  name: {{ default $fullName $rbac.name }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "cypik.serviceAccountName" . }}
-    namespace: {{ .Release.Namespace }}
+    name: {{ default $fullName $sa.name }}
+    namespace: {{ $root.Release.Namespace }}
+{{- end }}
 {{- end }}
 {{- end }}

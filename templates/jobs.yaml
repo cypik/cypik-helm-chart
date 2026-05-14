@@ -26,6 +26,14 @@ spec:
         {{- include "cypik.selectorLabels" $root | nindent 8 }}
         app.kubernetes.io/component: {{ $appName }}
     spec:
+      {{- $sa := default dict $app.serviceAccount }}
+      {{- $serviceAccountName := include "cypik.serviceAccountName" $root }}
+      {{- if $sa.create }}
+        {{- $serviceAccountName = default $fullName $sa.name }}
+      {{- else if $sa.name }}
+        {{- $serviceAccountName = $sa.name }}
+      {{- end }}
+      serviceAccountName: {{ $serviceAccountName }}
       restartPolicy: Never
       containers:
         - name: job
