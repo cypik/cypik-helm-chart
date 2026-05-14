@@ -29,8 +29,9 @@ spec:
       restartPolicy: Never
       containers:
         - name: job
-          image: {{ printf "%s:%s" (default $root.Values.image.repository $app.image.repository) (default (default $root.Values.image.tag $root.Chart.AppVersion) $app.image.tag) | quote }}
-          imagePullPolicy: {{ default $root.Values.image.pullPolicy $app.image.pullPolicy | quote }}
+          {{- $image := $app.image | default dict }}
+          image: {{ printf "%s:%s" (default $root.Values.image.repository $image.repository) (default (default $root.Values.image.tag $root.Chart.AppVersion) $image.tag) | quote }}
+          imagePullPolicy: {{ default $root.Values.image.pullPolicy $image.pullPolicy | quote }}
           command: {{ $job.command | toYaml | nindent 12 }}
           {{- if or $app.env $app.envRaw }}
           env:
