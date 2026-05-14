@@ -42,6 +42,15 @@
         }
       }
     },
+    "env": {
+      "type": "array"
+    },
+    "envFrom": {
+      "type": "array"
+    },
+    "envRaw": {
+      "type": "array"
+    },
     "service": {
       "type": "object",
       "properties": {
@@ -191,6 +200,9 @@
               }
             }
           },
+          "envRaw": {
+            "type": "array"
+          },
           "service": {
             "type": "object",
             "properties": {
@@ -252,6 +264,33 @@
               },
               "stringData": {
                 "type": "object"
+              }
+            }
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "command"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "command": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "annotations": {
+                  "type": "object"
+                },
+                "resources": {
+                  "type": "object"
+                }
               }
             }
           }

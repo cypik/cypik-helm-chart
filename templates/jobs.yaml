@@ -1,0 +1,66 @@
+{{- $root := . }}
+{{- range $app := .Values.applications }}
+  {{- $appName := $app.name }}
+  {{- $fullName := printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-" }}
+  {{- range $job := $app.jobs }}
+  {{- if ne $job.enabled false }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-%s" $fullName $job.name | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "cypik.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $appName }}
+  annotations:
+    {{- if $job.annotations }}
+    {{- toYaml $job.annotations | nindent 4 }}
+    {{- else }}
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
+    {{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "cypik.selectorLabels" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $appName }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: job
+          image: {{ printf "%s:%s" (default $root.Values.image.repository $app.image.repository) (default (default $root.Values.image.tag $root.Chart.AppVersion) $app.image.tag) | quote }}
+          imagePullPolicy: {{ default $root.Values.image.pullPolicy $app.image.pullPolicy | quote }}
+          command: {{ $job.command | toYaml | nindent 12 }}
+          {{- if or $app.env $app.envRaw }}
+          env:
+            {{- with $app.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with $app.envRaw }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- $config := default dict $app.config }}
+          {{- $secret := default dict $app.secret }}
+          {{- if or $app.envFrom (default false $config.enabled) (default false $secret.enabled) }}
+          envFrom:
+            {{- if default false $config.enabled }}
+            - configMapRef:
+                name: {{ $fullName }}
+            {{- end }}
+            {{- if default false $secret.enabled }}
+            - secretRef:
+                name: {{ $fullName }}
+            {{- end }}
+            {{- with $app.envFrom }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- with $job.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}

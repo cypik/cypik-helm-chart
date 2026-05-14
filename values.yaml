@@ -299,4 +299,13 @@ applications:
             - path: /
               pathType: Prefix
               servicePort: http
+    jobs:
+      - name: db-migrate
+        enabled: false
+        command: ["echo", "Running migrations..."]
+    envRaw:
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
 

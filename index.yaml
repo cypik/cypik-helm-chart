@@ -11,10 +11,10 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-05-13T18:14:31.037224948+05:30"
+    created: "2026-05-14T12:04:58.655273512+05:30"
     description: A reusable Helm chart for deploying web apps, APIs, workers, and
       services across projects.
-    digest: 288548c6b83d8fff91db9a2d60151215150595aab044943a4f548b8d37487999
+    digest: 17e11bb2c556f4552a6c7c2a421b00cd7d4a378e4d77bdc5fa41a77a6afac8c5
     home: https://cypik.com
     keywords:
     - universal
@@ -32,4 +32,4 @@ entries:
     urls:
     - https://cypik.github.io/cypik-helm-chart/cypik-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-13T18:14:31.0266228+05:30"
+generated: "2026-05-14T12:04:58.651261991+05:30"

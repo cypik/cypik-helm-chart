@@ -110,9 +110,14 @@ spec:
           ports:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with $app.env }}
+          {{- if or $app.env $app.envRaw }}
           env:
+            {{- with $app.env }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with $app.envRaw }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           {{- $config := default dict $app.config }}
           {{- $secret := default dict $app.secret }}

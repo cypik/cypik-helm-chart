@@ -44,9 +44,14 @@ spec:
               args:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
-              {{- with .env }}
+              {{- if or .env .envRaw }}
               env:
+                {{- with .env }}
                 {{- toYaml . | nindent 16 }}
+                {{- end }}
+                {{- with .envRaw }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
               {{- end }}
               {{- if or $.Values.config.enabled $.Values.secret.enabled .envFrom }}
               envFrom:
