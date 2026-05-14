@@ -1,5 +1,5 @@
 apiVersion: v2
-name: yadav
+name: cypik
 description: A reusable Helm chart for deploying web apps, APIs, workers, and services across projects.
 type: application
 version: 0.1.0
