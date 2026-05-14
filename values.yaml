@@ -277,6 +277,16 @@ applications:
             - path: /
               pathType: Prefix
               servicePort: httpd
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 30
+      targetMemoryUtilizationPercentage: 30
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
     config:
       enabled: true
       data:
