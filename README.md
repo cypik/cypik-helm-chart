@@ -1,28 +1,24 @@
-<p align="center">
-  <img src="logo.png" alt="Cypik Logo" width="200">
-</p>
+# Cypik Helm Charts
 
-# Cypik Helm Chart 🚀
+This repository contains reusable Helm charts.
 
-Cypik is a highly flexible, production-ready, and multi-application Helm chart designed to simplify the deployment of complex microservices architectures on Kubernetes.
+## Structure
 
-## ✨ Key Features
-
-- **Multi-App Architecture**: Deploy multiple independent applications (frontend, api, worker) within a single Helm release.
-- **Dynamic Config/Secret Injection**: Automatically generate and inject ConfigMaps and Secrets per application.
-- **Job & CronJob Support**: Built-in support for one-off Jobs (e.g., DB migrations) and recurring CronJobs.
-- **Advanced Environment (`envRaw`)**: Inject complex environment variables (fieldRef, secretKeyRef) directly using YAML format.
-- **Autoscaling**: Native integration with HPA and KEDA ScaledObject.
-- **Schema Validation**: Full `values.schema.json` support for IDE auto-completion and validation.
-
-## 🚀 Quick Start
-
-### 1. Installation
-```bash
-helm upgrade --install my-release . -f values.yaml
+```text
+.
+├── charts
+│   └── cypik
+│       ├── Chart.yaml
+│       ├── charts
+│       ├── templates
+│       ├── values.schema.json
+│       └── values.yaml
+├── LICENSE
+└── README.md
 ```
 
-### 2. Validation (Preview YAML output)
+## Install
+
 ```bash
 helm template . -f values.yaml
 ```
