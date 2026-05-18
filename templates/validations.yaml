@@ -14,22 +14,40 @@
 {{- fail "keda.enabled requires deployment.enabled=true." }}
 {{- end }}
 {{- range .Values.applications }}
+{{- $appName := .name }}
 {{- $autoscaling := default dict .autoscaling }}
 {{- $keda := default dict .keda }}
 {{- $deployment := default dict .deployment }}
 {{- if and $autoscaling.enabled $keda.enabled }}
-{{- fail (printf "applications[%s].autoscaling.enabled and applications[%s].keda.enabled cannot both be true" .name .name) }}
+{{- fail (printf "applications[%s].autoscaling.enabled and applications[%s].keda.enabled cannot both be true" $appName $appName) }}
 {{- end }}
 {{- if and $autoscaling.enabled (eq $deployment.enabled false) }}
-{{- fail (printf "applications[%s].autoscaling.enabled requires deployment.enabled=true" .name) }}
+{{- fail (printf "applications[%s].autoscaling.enabled requires deployment.enabled=true" $appName) }}
 {{- end }}
 {{- if and $keda.enabled (eq $deployment.enabled false) }}
-{{- fail (printf "applications[%s].keda.enabled requires deployment.enabled=true" .name) }}
+{{- fail (printf "applications[%s].keda.enabled requires deployment.enabled=true" $appName) }}
 {{- end }}
 {{- $service := default dict .service }}
 {{- $ingress := default dict .ingress }}
 {{- if and $ingress.enabled (not $service.enabled) }}
-{{- fail (printf "applications[%s].ingress.enabled requires service.enabled=true" .name) }}
+{{- fail (printf "applications[%s].ingress.enabled requires service.enabled=true" $appName) }}
+{{- end }}
+{{- if $ingress.enabled }}
+{{- $servicePorts := default (list (dict "name" "http" "port" 80 "targetPort" "http" "protocol" "TCP")) $service.ports }}
+{{- range $host := $ingress.hosts }}
+{{- range $path := $host.paths }}
+{{- $servicePort := required (printf "applications[%s].ingress.hosts[].paths[].servicePort is required" $appName) $path.servicePort }}
+{{- $matched := false }}
+{{- range $port := $servicePorts }}
+{{- if or (and $port.name (eq (toString $servicePort) (toString $port.name))) (and $port.port (eq (toString $servicePort) (toString $port.port))) }}
+{{- $matched = true }}
+{{- end }}
+{{- end }}
+{{- if not $matched }}
+{{- fail (printf "applications[%s].ingress servicePort %q must match one of service.ports[].name or service.ports[].port" $appName (toString $servicePort)) }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- range .Values.cronjobs }}

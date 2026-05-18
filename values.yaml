@@ -276,7 +276,7 @@ applications:
           paths:
             - path: /
               pathType: Prefix
-              servicePort: httpd
+              servicePort: http
     autoscaling:
       enabled: false
     keda:
@@ -305,7 +305,7 @@ applications:
       ports:
         - name: httpd
           port: 80
-          targetPort: 8080
+          targetPort: 80
     ingress:
       enabled: false
       hosts:
@@ -313,7 +313,7 @@ applications:
           paths:
             - path: /
               pathType: Prefix
-              servicePort: http
+              servicePort: httpd
     jobs:
       - name: db-migrate
         enabled: false
@@ -323,4 +323,3 @@ applications:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
-
