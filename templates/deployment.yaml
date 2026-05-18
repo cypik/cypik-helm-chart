@@ -68,10 +68,14 @@ spec:
     spec:
       {{- $sa := default dict $app.serviceAccount }}
       {{- $serviceAccountName := include "cypik.serviceAccountName" $root }}
-      {{- if $sa.create }}
-        {{- $serviceAccountName = default $fullName $sa.name }}
-      {{- else if $sa.name }}
-        {{- $serviceAccountName = $sa.name }}
+      {{- if hasKey $sa "create" }}
+        {{- if $sa.create }}
+          {{- $serviceAccountName = default $fullName $sa.name }}
+        {{- else if $sa.name }}
+          {{- $serviceAccountName = $sa.name }}
+        {{- else }}
+          {{- $serviceAccountName = "default" }}
+        {{- end }}
       {{- end }}
       serviceAccountName: {{ $serviceAccountName }}
       {{- with $app.priorityClassName }}

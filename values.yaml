@@ -63,7 +63,7 @@ secret:
 
 serviceAccount:
   # -- Create ServiceAccount.
-  create: true
+  create: false
   # -- Automount service account token.
   automount: true
   # -- ServiceAccount annotations.

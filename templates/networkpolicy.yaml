@@ -1,22 +1,41 @@
-{{- if .Values.networkPolicy.enabled }}
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "networkPolicy" .Values.networkPolicy) }}
+{{- end }}
+{{- range $apps }}
+{{- $appName := required "applications[].name is required" .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $networkPolicy := default dict .networkPolicy }}
+{{- if default false $networkPolicy.enabled }}
+---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "cypik.fullname" . }}
+  name: {{ $fullName }}
   labels:
-    {{- include "cypik.labels" . | nindent 4 }}
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
 spec:
   podSelector:
     matchLabels:
-      {{- include "cypik.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: {{ include "cypik.name" $root }}
+      app.kubernetes.io/instance: {{ $root.Release.Name }}
+      {{- if $isMulti }}
+      app.kubernetes.io/component: {{ $appName }}
+      {{- end }}
   policyTypes:
-    {{- toYaml .Values.networkPolicy.policyTypes | nindent 4 }}
-  {{- with .Values.networkPolicy.ingress }}
+    {{- toYaml (default (list "Ingress") $networkPolicy.policyTypes) | nindent 4 }}
+  {{- with $networkPolicy.ingress }}
   ingress:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.networkPolicy.egress }}
+  {{- with $networkPolicy.egress }}
   egress:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+{{- end }}
 {{- end }}

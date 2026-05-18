@@ -1,17 +1,36 @@
-{{- if .Values.pdb.enabled }}
+{{- $root := . }}
+{{- $isMulti := gt (len .Values.applications) 0 }}
+{{- $apps := .Values.applications }}
+{{- if not $isMulti }}
+{{- $apps = list (dict "name" (include "cypik.name" .) "fullname" (include "cypik.fullname" .) "pdb" .Values.pdb) }}
+{{- end }}
+{{- range $apps }}
+{{- $appName := required "applications[].name is required" .name }}
+{{- $fullName := default (printf "%s-%s" (include "cypik.fullname" $root) $appName | trunc 63 | trimSuffix "-") .fullname }}
+{{- $pdb := default dict .pdb }}
+{{- if default false $pdb.enabled }}
+---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "cypik.fullname" . }}
+  name: {{ $fullName }}
   labels:
-    {{- include "cypik.labels" . | nindent 4 }}
+    {{- include "cypik.labels" $root | nindent 4 }}
+    {{- if $isMulti }}
+    app.kubernetes.io/component: {{ $appName }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
-      {{- include "cypik.selectorLabels" . | nindent 6 }}
-  {{- if ne .Values.pdb.maxUnavailable nil }}
-  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+      app.kubernetes.io/name: {{ include "cypik.name" $root }}
+      app.kubernetes.io/instance: {{ $root.Release.Name }}
+      {{- if $isMulti }}
+      app.kubernetes.io/component: {{ $appName }}
+      {{- end }}
+  {{- if ne $pdb.maxUnavailable nil }}
+  maxUnavailable: {{ $pdb.maxUnavailable }}
   {{- else }}
-  minAvailable: {{ .Values.pdb.minAvailable }}
+  minAvailable: {{ default 1 $pdb.minAvailable }}
   {{- end }}
+{{- end }}
 {{- end }}
