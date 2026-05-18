@@ -13,6 +13,10 @@
 {{- if and .Values.keda.enabled (not .Values.deployment.enabled) }}
 {{- fail "keda.enabled requires deployment.enabled=true." }}
 {{- end }}
+{{- if .Values.storageClass.enabled }}
+{{- $_ := required "storageClass.name is required when storageClass.enabled=true" .Values.storageClass.name }}
+{{- $_ := required "storageClass.provisioner is required when storageClass.enabled=true" .Values.storageClass.provisioner }}
+{{- end }}
 {{- range .Values.applications }}
 {{- $appName := .name }}
 {{- $autoscaling := default dict .autoscaling }}

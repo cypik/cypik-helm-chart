@@ -152,11 +152,66 @@
         "enabled": {
           "type": "boolean"
         },
+        "accessModes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "size": {
           "type": "string"
         },
+        "storageClass": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        },
         "mountPath": {
           "type": "string"
+        }
+      }
+    },
+    "storageClass": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "provisioner": {
+          "type": "string"
+        },
+        "reclaimPolicy": {
+          "type": "string",
+          "enum": ["Delete", "Retain", "Recycle"]
+        },
+        "volumeBindingMode": {
+          "type": "string",
+          "enum": ["Immediate", "WaitForFirstConsumer"]
+        },
+        "allowVolumeExpansion": {
+          "type": "boolean"
+        },
+        "isDefaultClass": {
+          "type": "boolean"
+        },
+        "parameters": {
+          "type": "object"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "allowedTopologies": {
+          "type": "array"
+        },
+        "mountOptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

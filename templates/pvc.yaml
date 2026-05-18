@@ -29,7 +29,11 @@ spec:
   resources:
     requests:
       storage: {{ default $root.Values.persistence.size $persistence.size }}
-  {{- $storageClass := default $root.Values.persistence.storageClass $persistence.storageClass }}
+  {{- $defaultStorageClass := $root.Values.persistence.storageClass }}
+  {{- if and $root.Values.storageClass.enabled $root.Values.storageClass.name (not $defaultStorageClass) }}
+    {{- $defaultStorageClass = $root.Values.storageClass.name }}
+  {{- end }}
+  {{- $storageClass := default $defaultStorageClass $persistence.storageClass }}
   {{- if $storageClass }}
   storageClassName: {{ $storageClass | quote }}
   {{- end }}

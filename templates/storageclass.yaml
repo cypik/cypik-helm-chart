@@ -1,0 +1,29 @@
+{{- if .Values.storageClass.enabled }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ required "storageClass.name is required when storageClass.enabled=true" .Values.storageClass.name }}
+  labels:
+    {{- include "cypik.labels" . | nindent 4 }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: {{ ternary "true" "false" .Values.storageClass.isDefaultClass | quote }}
+    {{- with .Values.storageClass.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+provisioner: {{ required "storageClass.provisioner is required when storageClass.enabled=true" .Values.storageClass.provisioner }}
+reclaimPolicy: {{ default "Retain" .Values.storageClass.reclaimPolicy }}
+volumeBindingMode: {{ default "WaitForFirstConsumer" .Values.storageClass.volumeBindingMode }}
+allowVolumeExpansion: {{ default true .Values.storageClass.allowVolumeExpansion }}
+{{- with .Values.storageClass.parameters }}
+parameters:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- with .Values.storageClass.allowedTopologies }}
+allowedTopologies:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- with .Values.storageClass.mountOptions }}
+mountOptions:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}

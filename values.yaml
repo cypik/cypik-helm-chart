@@ -234,6 +234,30 @@ persistence:
   annotations: {}
   mountPath: /data
 
+storageClass:
+  # -- Create a StorageClass. Disabled by default so the cluster default StorageClass is used.
+  enabled: false
+  # -- StorageClass name. Required when storageClass.enabled=true.
+  name: ""
+  # -- Storage provisioner. Required when storageClass.enabled=true.
+  provisioner: ""
+  # -- StorageClass reclaim policy.
+  reclaimPolicy: Retain
+  # -- StorageClass volume binding mode.
+  volumeBindingMode: WaitForFirstConsumer
+  # -- Allow PVC expansion.
+  allowVolumeExpansion: true
+  # -- Mark this StorageClass as the default for the cluster.
+  isDefaultClass: false
+  # -- StorageClass parameters.
+  parameters: {}
+  # -- Additional StorageClass annotations.
+  annotations: {}
+  # -- Restrict provisioning to selected topologies.
+  allowedTopologies: []
+  # -- Mount options for provisioned volumes.
+  mountOptions: []
+
 # -- Init containers.
 initContainers: []
 
