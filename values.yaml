@@ -236,13 +236,13 @@ persistence:
 
 storageClass:
   # -- Create a StorageClass. Disabled by default so the cluster default StorageClass is used.
-  enabled: false
+  enabled: true
   # -- StorageClass name. Required when storageClass.enabled=true.
-  name: ""
+  name: "cypik-custom-sc"
   # -- Storage provisioner. Required when storageClass.enabled=true.
-  provisioner: ""
+  provisioner: "kubernetes.io/aws-ebs"
   # -- StorageClass reclaim policy.
-  reclaimPolicy: Retain
+  reclaimPolicy: Delete
   # -- StorageClass volume binding mode.
   volumeBindingMode: WaitForFirstConsumer
   # -- Allow PVC expansion.
@@ -250,7 +250,8 @@ storageClass:
   # -- Mark this StorageClass as the default for the cluster.
   isDefaultClass: false
   # -- StorageClass parameters.
-  parameters: {}
+  parameters:
+    type: gp2
   # -- Additional StorageClass annotations.
   annotations: {}
   # -- Restrict provisioning to selected topologies.
@@ -320,6 +321,11 @@ applications:
       enabled: true
       data:
         APP_NAME: "frontend-app"
+    persistence:
+      enabled: true
+      size: 1Gi
+      storageClass: ""
+      mountPath: /usr/share/nginx/html
   - name: api
     image:
       repository: nginx

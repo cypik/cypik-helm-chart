@@ -382,6 +382,32 @@
                 "type": "array"
               }
             }
+          },
+          "persistence": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "accessModes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "size": {
+                "type": "string"
+              },
+              "storageClass": {
+                "type": "string"
+              },
+              "mountPath": {
+                "type": "string"
+              },
+              "annotations": {
+                "type": "object"
+              }
+            }
           }
         }
       }
