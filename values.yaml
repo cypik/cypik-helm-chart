@@ -306,6 +306,18 @@ applications:
             - path: /
               pathType: Prefix
               servicePort: http
+    networkPolicy:
+      enabled: false
+      policyTypes:
+        - Ingress
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  app: allowed-client
+          ports:
+            - protocol: TCP
+              port: 80
     autoscaling:
       enabled: false
     keda:
