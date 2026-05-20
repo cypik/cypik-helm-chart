@@ -33,8 +33,10 @@ spec:
   {{- end }}
   rules:
     {{- range $ingress.hosts }}
-    - host: {{ .host | quote }}
+    - {{ if .host }}host: {{ .host | quote }}{{ else }}http:{{ end }}
+      {{- if .host }}
       http:
+      {{- end }}
         paths:
           {{- range .paths }}
           - path: {{ .path }}

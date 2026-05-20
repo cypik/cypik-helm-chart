@@ -295,9 +295,13 @@ applications:
           port: 80
           targetPort: 80
     ingress:
-      enabled: false
+      enabled: true
+      className: "alb"
+      annotations:
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
       hosts:
-        - host: app.example.com
+        - host: ""
           paths:
             - path: /
               pathType: Prefix
